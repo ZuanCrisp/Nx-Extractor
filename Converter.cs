@@ -158,11 +158,25 @@ public sealed class Converter
         string output = Path.Combine(outputDir, name);
         _log($"{input} -> {name}");
         if (File.Exists(output)) File.Delete(output);
+        // Carpeta: NUP temporal sin comprimir + NX. NUP: el NX puede pesar casi lo mismo que el NUP.
+        EnsureSpace(outputDir, folder ? 2 * DirSize(input) : new FileInfo(input).Length);
         if (folder) NxFormat.FromFolder(input, output, _log, _progress);
         else NxFormat.FromNup(input, output, _log, _progress);
         _log(L.T("logNxVerify"));
         NxFormat.Verify(output, _log);
         _log($"  OK ({new FileInfo(output).Length / (1024 * 1024)} MiB)");
+    }
+
+    private static long DirSize(string dir) =>
+        new DirectoryInfo(dir).EnumerateFiles("*", SearchOption.AllDirectories).Sum(f => f.Length);
+
+    /// <summary>Avisa antes de empezar si el disco de destino no tiene el espacio estimado.</summary>
+    private static void EnsureSpace(string dir, long needed)
+    {
+        Directory.CreateDirectory(dir);
+        long free = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(dir))).AvailableFreeSpace;
+        if (free < needed)
+            throw new IOException(L.F("errDiskSpace", Path.GetPathRoot(Path.GetFullPath(dir)), needed / 1e9, free / 1e9));
     }
 
     /// <summary>.nx -> carpeta temporal (base/updates/dlc) -> .nup</summary>
@@ -173,6 +187,8 @@ public sealed class Converter
         string dump = Path.Combine(temp, Path.GetFileNameWithoutExtension(nx));
         if (Directory.Exists(temp)) Directory.Delete(temp, true);
         Directory.CreateDirectory(temp);
+        // Mínimo: el contenido extraído más el NUP (puede ser mucho más si el NX deduplica).
+        EnsureSpace(outputDir, 2 * new FileInfo(nx).Length);
         try
         {
             _log(L.F("logExtracting", Path.GetFileName(nx), dump));
@@ -189,6 +205,7 @@ public sealed class Converter
     private void PackNup(string folder, string outputDir)
     {
         if (!Directory.Exists(folder)) throw new InvalidDataException(L.T("errNotFolder"));
+        EnsureSpace(outputDir, DirSize(folder));
         var packages = NupWriter.Detect(folder);
         var top = packages.Last(p => p.Kind != NupFormat.KindAddon);
         string name = $"{new DirectoryInfo(folder).Name} [{top.TitleId:X16}][v{top.Version}].nup";
