@@ -226,10 +226,11 @@ public sealed class MainForm : Form
         var toNsp = Loc(new RadioButton { Checked = true, AutoSize = true }, "toNsp");
         var toNsz = Loc(new RadioButton { AutoSize = true }, "toNsz");
         var toNup = Loc(new RadioButton { AutoSize = true }, "toNup");
+        var toNx = Loc(new RadioButton { AutoSize = true }, "toNx");
         var level = new NumericUpDown { Minimum = 1, Maximum = 22, Value = 18, Width = 60 };
         var levelLbl = Loc(new Label { AutoSize = true, Margin = new Padding(16, 6, 0, 0) }, "zstdLevel");
         var modeRow = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true };
-        modeRow.Controls.AddRange(new Control[] { toNsp, toNsz, toNup, levelLbl, level });
+        modeRow.Controls.AddRange(new Control[] { toNsp, toNsz, toNup, toNx, levelLbl, level });
         toNsz.CheckedChanged += (_, _) => level.Enabled = levelLbl.Enabled = toNsz.Checked;
         level.Enabled = levelLbl.Enabled = false;
         root.Controls.Add(Group("conversion", new Control[] { modeRow, Row("outputFolder", _convOut, BrowseFolder(_convOut)) }));
@@ -264,16 +265,17 @@ public sealed class MainForm : Form
         {
             var inputs = files.Items.Cast<string>().ToList();
             string outDir = _convOut.Text.Trim();
-            bool nup = toNup.Checked;
+            bool nup = toNup.Checked, nx = toNx.Checked;
             string err =
-                !nup && !File.Exists(_prod.Text.Trim()) ? L.T("errProd") :
+                !nup && !nx && !File.Exists(_prod.Text.Trim()) ? L.T("errProd") :
                 inputs.Count == 0 ? L.T("errNoFiles") :
-                nup && inputs.Any(f => !Directory.Exists(f)) ? L.T("errNotFolder") :
-                !nup && inputs.Any(f => !File.Exists(f)) ? L.T("errMissing") :
+                nup && inputs.Any(f => !Directory.Exists(f) && !(File.Exists(f) && NxFormat.IsNx(f))) ? L.T("errNotFolder") :
+                nx && inputs.Any(f => !Directory.Exists(f) && !(File.Exists(f) && Extractor.IsNup(f))) ? L.T("errNxInputs") :
+                !nup && !nx && inputs.Any(f => !File.Exists(f)) ? L.T("errMissing") :
                 outDir == "" ? L.T("errOut") : null;
             if (err != null) { MessageBox.Show(this, err, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
 
-            var target = nup ? ConvertTarget.Nup : toNsz.Checked ? ConvertTarget.Nsz : ConvertTarget.Nsp;
+            var target = nx ? ConvertTarget.Nx : nup ? ConvertTarget.Nup : toNsz.Checked ? ConvertTarget.Nsz : ConvertTarget.Nsp;
             SaveSettings();
             go.Enabled = false;
             log.Clear();
@@ -508,7 +510,7 @@ public sealed class MainForm : Form
         };
 
         string err =
-            !File.Exists(o.ProdKeys) && !new[] { o.BaseFile, o.UpdateFile }.Concat(o.DlcFiles).Where(f => f != "").All(Extractor.IsNup) ? L.T("errProd") :
+            !File.Exists(o.ProdKeys) && !new[] { o.BaseFile, o.UpdateFile }.Concat(o.DlcFiles).Where(f => f != "").All(f => Extractor.IsNup(f) || NxFormat.IsNx(f)) ? L.T("errProd") :
             o.TitleKeys != "" && !File.Exists(o.TitleKeys) ? L.T("errTitle") :
             o.BaseFile == "" && o.UpdateFile == "" && o.DlcFiles.Count == 0 ? L.T("errNoInput") :
             new[] { o.BaseFile, o.UpdateFile }.Concat(o.DlcFiles).Any(f => f != "" && !File.Exists(f)) ? L.T("errMissing") :

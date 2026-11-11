@@ -71,6 +71,7 @@ public sealed class Extractor : IDisposable
         foreach (var (path, kind) in inputs)
         {
             if (IsNup(path)) ExtractNup(path);
+            else if (NxFormat.IsNx(path)) ExtractNx(path);
             else Load(path, kind);
         }
 
@@ -94,6 +95,18 @@ public sealed class Extractor : IDisposable
         if (_o.DlcRomFs) ExtractDlcs();
 
         _log(L.T("logDone"));
+    }
+
+    // ---------- NX (NXFormat) ----------
+
+    /// <summary>.nx -> dump completo (base/, updates/&lt;versión&gt;/, dlc/&lt;id&gt;/&lt;versión&gt;/) con la librería oficial.</summary>
+    private void ExtractNx(string path)
+    {
+        _log(L.F("logOpening", "NX", Path.GetFileName(path)));
+        string dir = Path.Combine(_o.OutputDir, Path.GetFileNameWithoutExtension(path));
+        for (int i = 2; Directory.Exists(dir); i++) dir = Path.Combine(_o.OutputDir, $"{Path.GetFileNameWithoutExtension(path)} ({i})");
+        _log(L.F("logExtracting", "NX", dir));
+        NxFormat.Extract(path, dir, _log, _progress);
     }
 
     // ---------- NUP (Switch 2) ----------

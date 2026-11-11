@@ -14,11 +14,16 @@
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <DebugType>none</DebugType>
     <ApplicationIcon>app.ico</ApplicationIcon>
-    <Version>1.7.0</Version>
+    <Version>1.8.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Product>NX Extractor</Product>
     <AssemblyTitle>NX Extractor</AssemblyTitle>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="native\nxformat.dll" LogicalName="native.nxformat.dll" />
+    <EmbeddedResource Include="native\vcruntime140.dll" LogicalName="native.vcruntime140.dll" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="LibHac" Version="0.19.0" />

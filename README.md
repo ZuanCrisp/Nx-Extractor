@@ -28,6 +28,7 @@ A simple Windows tool to extract and convert Nintendo Switch game dumps — no c
 - NSZ → NSP
 - NSP / XCI → NSZ (zstd level 1–22)
 - Extracted Switch 2 game folder → `.nup` (`exefs/` + `romfs/`, or `base/` + `updates/<version>/` + `dlc/<id>/<version>/`), readable by Lichii / Eglantine
+- Folder or .nup → .nx ([NXFormat](https://github.com/fab918/nxformat): deduplicated, faster to read, verified after packing), and .nx → .nup. .nx files can also be extracted in the Extract tab
 - Batch conversion, drag & drop
 
 **Firmware patch** (run newer games on older firmware)
@@ -79,7 +80,8 @@ dotnet publish -c Release -o dist
 
 ## Credits
 
-Built on [LibHac](https://github.com/Thealexbarney/LibHac) and [ZstdSharp](https://github.com/oleg-st/ZstdSharp). The firmware patch follows the algorithm of [NSC_Builder](https://github.com/julesontheroad/NSC_Builder) (MIT). The NUP format follows the reader in [Lichii](https://github.com/zortos293/Lichii/tree/nx2) / [Eglantine](https://github.com/Eglantine-Community/Eglantine).
+Built on [LibHac](https://github.com/Thealexbarney/LibHac) and [ZstdSharp](https://github.com/oleg-st/ZstdSharp). The firmware patch follows the algorithm of [NSC_Builder](https://github.com/julesontheroad/NSC_Builder) (MIT). The NUP format follows the reader in [Lichii](https://github.com/zortos293/Lichii/tree/nx2) / [Eglantine](https://github.com/Eglantine-Community/Eglantine). .nx support uses the official 
+xformat.dll from [nxformat](https://github.com/fab918/nxformat) (MIT, bundled inside the exe).
 
 ---
 
@@ -88,7 +90,7 @@ Built on [LibHac](https://github.com/Thealexbarney/LibHac) and [ZstdSharp](https
 Herramienta para Windows que extrae y convierte dumps de juegos de Nintendo Switch, sin línea de comandos ni emulador.
 
 - **Extraer:** ExeFS, RomFS (con el update aplicado), RomFS de DLC y `control.nacp` con iconos, desde NSP, NSZ, XCI o XCZ. También ExeFS y RomFS de paquetes `.nup` de Switch 2 (ya descifrados, sin claves).
-- **Convertir:** XCI/XCZ → NSP, NSZ → NSP, NSP/XCI → NSZ, por lotes. Y carpetas de juegos de Switch 2 extraídos → `.nup`.
+- **Convertir:** XCI/XCZ → NSP, NSZ → NSP, NSP/XCI → NSZ, por lotes. Y carpetas de juegos de Switch 2 extraídos → `.nup`, y carpeta / `.nup` ↔ `.nx` (NXFormat).
 - **Firmware:** parchea juegos (NSP/NSZ/XCI) para que corran en firmware más viejo: re-cifra las claves para una generación anterior, quita el cifrado por titlekey y baja el RequiredSystemVersion. Necesita sigpatches. Solo probado en emulador; si algo falla, repórtalo en Issues.
 - Un solo `.exe`, sin instalar nada. Interfaz en 5 idiomas.
 

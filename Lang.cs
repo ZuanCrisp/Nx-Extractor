@@ -39,11 +39,11 @@ public static class L
         ["filterKeys"] = new[] { "Keys (*.keys)|*.keys|All files (*.*)|*.*", "Keys (*.keys)|*.keys|Todos (*.*)|*.*", "Clés (*.keys)|*.keys|Tous les fichiers (*.*)|*.*", "キー (*.keys)|*.keys|すべてのファイル (*.*)|*.*", "Schlüssel (*.keys)|*.keys|Alle Dateien (*.*)|*.*" },
         ["filterRoms"] = new[]
         {
-            "Switch ROMs (*.nsp;*.nsz;*.xci;*.xcz;*.nup)|*.nsp;*.nsz;*.xci;*.xcz;*.nup|All files (*.*)|*.*",
-            "Roms de Switch (*.nsp;*.nsz;*.xci;*.xcz;*.nup)|*.nsp;*.nsz;*.xci;*.xcz;*.nup|Todos (*.*)|*.*",
-            "ROM Switch (*.nsp;*.nsz;*.xci;*.xcz;*.nup)|*.nsp;*.nsz;*.xci;*.xcz;*.nup|Tous les fichiers (*.*)|*.*",
-            "Switch ROM (*.nsp;*.nsz;*.xci;*.xcz;*.nup)|*.nsp;*.nsz;*.xci;*.xcz;*.nup|すべてのファイル (*.*)|*.*",
-            "Switch-ROMs (*.nsp;*.nsz;*.xci;*.xcz;*.nup)|*.nsp;*.nsz;*.xci;*.xcz;*.nup|Alle Dateien (*.*)|*.*"
+            "Switch ROMs (*.nsp;*.nsz;*.xci;*.xcz;*.nup;*.nx)|*.nsp;*.nsz;*.xci;*.xcz;*.nup;*.nx|All files (*.*)|*.*",
+            "Roms de Switch (*.nsp;*.nsz;*.xci;*.xcz;*.nup;*.nx)|*.nsp;*.nsz;*.xci;*.xcz;*.nup;*.nx|Todos (*.*)|*.*",
+            "ROM Switch (*.nsp;*.nsz;*.xci;*.xcz;*.nup;*.nx)|*.nsp;*.nsz;*.xci;*.xcz;*.nup;*.nx|Tous les fichiers (*.*)|*.*",
+            "Switch ROM (*.nsp;*.nsz;*.xci;*.xcz;*.nup;*.nx)|*.nsp;*.nsz;*.xci;*.xcz;*.nup;*.nx|すべてのファイル (*.*)|*.*",
+            "Switch-ROMs (*.nsp;*.nsz;*.xci;*.xcz;*.nup;*.nx)|*.nsp;*.nsz;*.xci;*.xcz;*.nup;*.nx|Alle Dateien (*.*)|*.*"
         },
         ["tabExtract"] = new[] { "Extract", "Extraer", "Extraire", "展開", "Extrahieren" },
         ["tabConvert"] = new[] { "Convert", "Convertir", "Convertir", "変換", "Konvertieren" },
@@ -118,9 +118,9 @@ public static class L
         ["logNupPacking"] = new[] { "  Packing {0} title(s), {1} files ({2} MiB)", "  Empaquetando {0} título(s), {1} archivos ({2} MiB)", "  Empaquetage de {0} titre(s), {1} fichiers ({2} Mio)", "  {0} タイトル、{1} ファイル ({2} MiB) をパック中", "  Packe {0} Titel, {1} Dateien ({2} MiB)" },
         ["logNupPkg"] = new[] { "  {0} {1} v{2}: exefs={3} romfs={4}", "  {0} {1} v{2}: exefs={3} romfs={4}", "  {0} {1} v{2} : exefs={3} romfs={4}", "  {0} {1} v{2}: exefs={3} romfs={4}", "  {0} {1} v{2}: exefs={3} romfs={4}" },
         ["nupReadChanged"] = new[] { "{0} changed while it was being read.", "{0} cambió mientras se leía.", "{0} a changé pendant la lecture.", "{0} が読み込み中に変更されました。", "{0} hat sich beim Lesen geändert." },
-        ["toNup"] = new[] { "Folder → NUP (Switch 2)", "Carpeta → NUP (Switch 2)", "Dossier → NUP (Switch 2)", "フォルダー → NUP (Switch 2)", "Ordner → NUP (Switch 2)" },
+        ["toNup"] = new[] { "Folder / NX → NUP", "Carpeta / NX → NUP", "Dossier / NX → NUP", "フォルダー / NX → NUP", "Ordner / NX → NUP" },
         ["addFolder"] = new[] { "Add folder...", "Añadir carpeta...", "Ajouter un dossier...", "フォルダーを追加...", "Ordner hinzufügen..." },
-        ["errNotFolder"] = new[] { "For Folder → NUP, add extracted game folders (with exefs/ and romfs/), not files.", "Para Carpeta → NUP añade carpetas de juegos extraídos (con exefs/ y romfs/), no archivos.", "Pour Dossier → NUP, ajoutez des dossiers de jeux extraits (avec exefs/ et romfs/), pas des fichiers.", "フォルダー → NUP では、ファイルではなく展開済みゲームのフォルダー (exefs/ と romfs/ を含む) を追加してください。", "Für Ordner → NUP bitte entpackte Spielordner (mit exefs/ und romfs/) hinzufügen, keine Dateien." },
+        ["errNotFolder"] = new[] { "For Folder / NX → NUP, add extracted game folders (with exefs/ and romfs/) or .nx files.", "Para Carpeta / NX → NUP añade carpetas de juegos extraídos (con exefs/ y romfs/) o archivos .nx.", "Pour Dossier → NUP, ajoutez des dossiers de jeux extraits (avec exefs/ et romfs/), pas des fichiers.", "フォルダー → NUP では、ファイルではなく展開済みゲームのフォルダー (exefs/ と romfs/ を含む) を追加してください。", "Für Ordner → NUP bitte entpackte Spielordner (mit exefs/ und romfs/) hinzufügen, keine Dateien." },
         ["kindBaseNup"] = new[] { "Base", "Base", "Base", "ベース", "Basis" },
         ["kindUpdateNup"] = new[] { "Update", "Update", "Mise à jour", "アップデート", "Update" },
         ["tabFirmware"] = new[] { "Firmware", "Firmware", "Firmware", "ファームウェア", "Firmware" },
@@ -145,6 +145,10 @@ public static class L
         ["fwLogRsv"] = new[] { "  RequiredSystemVersion {0} → {1}", "  RequiredSystemVersion {0} → {1}", "  RequiredSystemVersion {0} → {1}", "  RequiredSystemVersion {0} → {1}", "  RequiredSystemVersion {0} → {1}" },
         ["fwDoneLog"] = new[] { "Finished: {0}/{1} patched.", "Terminado: {0}/{1} parcheados.", "Terminé : {0}/{1} patchés.", "完了: {0}/{1} 件パッチしました。", "Fertig: {0}/{1} gepatcht." },
         ["fwDoneMsg"] = new[] { "{0} of {1} files patched. Open the output folder?", "{0} de {1} archivos parcheados. ¿Abrir la carpeta de salida?", "{0} fichier(s) sur {1} patché(s). Ouvrir le dossier de sortie ?", "{1} 件中 {0} 件をパッチしました。出力フォルダーを開きますか?", "{0} von {1} Dateien gepatcht. Ausgabeordner öffnen?" },
+        ["toNx"] = new[] { "NUP / folder → NX", "NUP / carpeta → NX", "NUP / dossier → NX", "NUP / フォルダー → NX", "NUP / Ordner → NX" },
+        ["nxOnlyDecrypted"] = new[] { "{0}: NX can only be made from a NUP or an extracted game folder (NSP/XCI/NSZ are encrypted).", "{0}: el NX solo se puede crear desde un NUP o una carpeta de juego extraído (NSP/XCI/NSZ van cifrados).", "{0} : un NX ne peut être créé qu’à partir d’un NUP ou d’un dossier de jeu extrait (NSP/XCI/NSZ sont chiffrés).", "{0}: NX は NUP か展開済みゲームフォルダーからのみ作成できます (NSP/XCI/NSZ は暗号化されています)。", "{0}: NX kann nur aus einem NUP oder einem entpackten Spielordner erstellt werden (NSP/XCI/NSZ sind verschlüsselt)." },
+        ["logNxVerify"] = new[] { "  Verifying NX...", "  Verificando NX...", "  Vérification du NX...", "  NX を検証中...", "  NX wird geprüft..." },
+        ["errNxInputs"] = new[] { "For → NX, add .nup files or extracted game folders.", "Para → NX añade archivos .nup o carpetas de juegos extraídos.", "Pour → NX, ajoutez des fichiers .nup ou des dossiers de jeux extraits.", "→ NX では .nup ファイルか展開済みゲームフォルダーを追加してください。", "Für → NX bitte .nup-Dateien oder entpackte Spielordner hinzufügen." },
         ["converted"] = new[] { "converted", "convertido", "converti", "変換済み", "konvertiert" },
     };
 }

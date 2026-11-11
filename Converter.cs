@@ -17,7 +17,7 @@ using Path = System.IO.Path;
 
 namespace NxExtractor;
 
-public enum ConvertTarget { Nsp, Nsz, Nup }
+public enum ConvertTarget { Nsp, Nsz, Nup, Nx }
 
 /// <summary>
 /// Convierte XCI/XCZ/NSP/NSZ a NSP (NCAs sin comprimir) o NSZ (NCAs comprimidas como NCZ).
@@ -44,8 +44,14 @@ public sealed class Converter
 
     public void Convert(string input, string outputDir, ConvertTarget target)
     {
-        if (target == ConvertTarget.Nup) { PackNup(input, outputDir); return; }
-        if (Extractor.IsNup(input)) throw new NotSupportedException(L.F("nupNoConvert", Path.GetFileName(input)));
+        if (target == ConvertTarget.Nx) { PackNx(input, outputDir); return; }
+        if (target == ConvertTarget.Nup)
+        {
+            if (NxFormat.IsNx(input)) NxToNup(input, outputDir);
+            else PackNup(input, outputDir);
+            return;
+        }
+        if (Extractor.IsNup(input) || NxFormat.IsNx(input)) throw new NotSupportedException(L.F("nupNoConvert", Path.GetFileName(input)));
         string ext = target == ConvertTarget.Nsp ? ".nsp" : ".nsz";
         string output = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(input) + ext);
         if (Path.GetFullPath(output).Equals(Path.GetFullPath(input), StringComparison.OrdinalIgnoreCase))
@@ -140,6 +146,42 @@ public sealed class Converter
         {
             foreach (var d in Enumerable.Reverse(keepAlive)) try { d.Dispose(); } catch { }
             try { Directory.Delete(tempDir, true); } catch { }
+        }
+    }
+
+    /// <summary>.nup o carpeta extraída -> .nx (NXFormat), verificado al terminar.</summary>
+    private void PackNx(string input, string outputDir)
+    {
+        bool folder = Directory.Exists(input);
+        if (!folder && !Extractor.IsNup(input)) throw new NotSupportedException(L.F("nxOnlyDecrypted", Path.GetFileName(input)));
+        string name = (folder ? new DirectoryInfo(input).Name : Path.GetFileNameWithoutExtension(input)) + ".nx";
+        string output = Path.Combine(outputDir, name);
+        _log($"{input} -> {name}");
+        if (File.Exists(output)) File.Delete(output);
+        if (folder) NxFormat.FromFolder(input, output, _log, _progress);
+        else NxFormat.FromNup(input, output, _log, _progress);
+        _log(L.T("logNxVerify"));
+        NxFormat.Verify(output, _log);
+        _log($"  OK ({new FileInfo(output).Length / (1024 * 1024)} MiB)");
+    }
+
+    /// <summary>.nx -> carpeta temporal (base/updates/dlc) -> .nup</summary>
+    private void NxToNup(string nx, string outputDir)
+    {
+        // El NUP toma el nombre de la carpeta, así que el dump va a una subcarpeta con el nombre del .nx.
+        string temp = Path.Combine(outputDir, ".nx_to_nup_tmp");
+        string dump = Path.Combine(temp, Path.GetFileNameWithoutExtension(nx));
+        if (Directory.Exists(temp)) Directory.Delete(temp, true);
+        Directory.CreateDirectory(temp);
+        try
+        {
+            _log(L.F("logExtracting", Path.GetFileName(nx), dump));
+            NxFormat.Extract(nx, dump, _log, _progress);
+            PackNup(dump, outputDir);
+        }
+        finally
+        {
+            try { Directory.Delete(temp, true); } catch { }
         }
     }
 
