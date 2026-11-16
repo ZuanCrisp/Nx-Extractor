@@ -106,7 +106,8 @@ public sealed class Extractor : IDisposable
         string dir = Path.Combine(_o.OutputDir, Path.GetFileNameWithoutExtension(path));
         for (int i = 2; Directory.Exists(dir); i++) dir = Path.Combine(_o.OutputDir, $"{Path.GetFileNameWithoutExtension(path)} ({i})");
         _log(L.F("logExtracting", "NX", dir));
-        NxFormat.Extract(path, dir, _log, _progress);
+        try { NxFormat.Extract(path, dir, _log, _progress); }
+        catch { try { Directory.Delete(dir, true); } catch { } throw; }
     }
 
     // ---------- NUP (Switch 2) ----------

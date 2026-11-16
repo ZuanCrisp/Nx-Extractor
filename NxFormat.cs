@@ -12,7 +12,7 @@ namespace NxExtractor;
 public static class NxFormat
 {
     private const string Lib = "nxformat";
-    private const string BundledVersion = "1.0.2";
+    private const string BundledVersion = "1.0.4";
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void LineFn(IntPtr user, int isError, IntPtr line);
@@ -44,9 +44,10 @@ public static class NxFormat
                 string target = Path.Combine(dir, name);
                 using var res = Assembly.GetExecutingAssembly().GetManifestResourceStream("native." + name)
                     ?? throw new FileNotFoundException(name);
-                if (File.Exists(target) && new FileInfo(target).Length == res.Length) continue;
-                using var f = File.Create(target);
-                res.CopyTo(f);
+                var ms = new MemoryStream(); res.CopyTo(ms); byte[] want = ms.ToArray();
+                if (File.Exists(target) && System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(target))
+                    .AsSpan().SequenceEqual(System.Security.Cryptography.SHA256.HashData(want))) continue;
+                File.WriteAllBytes(target, want);
             }
             // vcruntime primero, por si el sistema no tiene el redistribuible de Visual C++.
             NativeLibrary.TryLoad(Path.Combine(dir, "vcruntime140.dll"), out _);
@@ -74,7 +75,12 @@ public static class NxFormat
 
         var ptrs = list.Select(Marshal.StringToCoTaskMemUTF8).ToArray();
         long total = 0;
+        var sync = new object();
         LineFn onLine = (_, isError, linePtr) =>
+        {
+            lock (sync) OnLine(isError, linePtr);
+        };
+        void OnLine(int isError, IntPtr linePtr)
         {
             string line = Marshal.PtrToStringUTF8(linePtr) ?? "";
             if (line.StartsWith("@TOTAL\t"))
@@ -89,7 +95,7 @@ public static class NxFormat
             }
             if (line.StartsWith("@") || line.StartsWith("elapsed_s=")) return;
             log("  " + (isError != 0 ? "[!] " : "") + line);
-        };
+        }
         try
         {
             var error = new byte[4096];
@@ -117,7 +123,9 @@ public static class NxFormat
     public static void FromNup(string nup, string output, Action<string> log, LibHac.Common.IProgressReport progress)
     {
         ulong id;
-        using (var pkg = new NupPackage(nup)) id = pkg.Titles[0].Id;
+        using (var pkg = new NupPackage(nup))
+            id = (pkg.Titles.FirstOrDefault(t => t.Kind == NupFormat.KindBase)
+                ?? pkg.Titles.FirstOrDefault(t => t.Kind != NupFormat.KindAddon) ?? pkg.Titles[0]).Id;
         Run(new[] { "pack-nup", nup, output, "--platform", PlatformFor(id), "--no-trail" }, log, progress);
     }
 
@@ -142,7 +150,7 @@ public static class NxFormat
 
     /// <summary>.nx -> carpeta con base/, updates/&lt;versión&gt;/ y dlc/&lt;id&gt;/&lt;versión&gt;/ (la carpeta no debe existir).</summary>
     public static void Extract(string nx, string folder, Action<string> log, LibHac.Common.IProgressReport progress) =>
-        Run(new[] { "extract", nx, folder }, log, progress);
+        Run(new[] { "extract", nx, folder, "--no-restore" }, log, progress); // sin receta .nxrestore (no es parte del juego)
 
     public static void Verify(string nx, Action<string> log) => Run(new[] { "verify", nx }, log, null);
 }

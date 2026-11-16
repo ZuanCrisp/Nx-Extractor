@@ -156,10 +156,14 @@ public sealed class Converter
         if (!folder && !Extractor.IsNup(input)) throw new NotSupportedException(L.F("nxOnlyDecrypted", Path.GetFileName(input)));
         string name = (folder ? new DirectoryInfo(input).Name : Path.GetFileNameWithoutExtension(input)) + ".nx";
         string output = Path.Combine(outputDir, name);
+        if (folder && (Path.GetFullPath(outputDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar)
+                .StartsWith(Path.GetFullPath(input).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException(L.T("errOutInsideInput"));
         _log($"{input} -> {name}");
-        if (File.Exists(output)) File.Delete(output);
         // Carpeta: NUP temporal sin comprimir + NX. NUP: el NX puede pesar casi lo mismo que el NUP.
-        EnsureSpace(outputDir, folder ? 2 * DirSize(input) : new FileInfo(input).Length);
+        // (Un .nx anterior con el mismo nombre se reemplaza, así que su espacio cuenta como libre.)
+        EnsureSpace(outputDir, (folder ? 2 * DirSize(input) : new FileInfo(input).Length) - (File.Exists(output) ? new FileInfo(output).Length : 0));
+        if (File.Exists(output)) File.Delete(output);
         if (folder) NxFormat.FromFolder(input, output, _log, _progress);
         else NxFormat.FromNup(input, output, _log, _progress);
         _log(L.T("logNxVerify"));
@@ -174,7 +178,9 @@ public sealed class Converter
     private static void EnsureSpace(string dir, long needed)
     {
         Directory.CreateDirectory(dir);
-        long free = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(dir))).AvailableFreeSpace;
+        long free;
+        try { free = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(dir))).AvailableFreeSpace; }
+        catch (ArgumentException) { return; } // carpeta de red (UNC): no se puede consultar, se sigue sin aviso
         if (free < needed)
             throw new IOException(L.F("errDiskSpace", Path.GetPathRoot(Path.GetFullPath(dir)), needed / 1e9, free / 1e9));
     }
